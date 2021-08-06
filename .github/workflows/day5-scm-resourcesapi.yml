@@ -20,17 +20,17 @@ on:
   workflow_dispatch:
 
 env:
-  API_PACKAGE_NAME: "scmresourcesapi.zip"
-  RESIZER_PACKAGE_NAME: "resizer.zip"
-  BICEP_FILE_NAME: "resourcesmain.bicep"
+  API_PACKAGE_NAME: 'scmresourcesapi.zip'
+  RESIZER_PACKAGE_NAME: 'resizer.zip'
+  BICEP_FILE_NAME: 'resourcesmain.bicep'
 
 jobs:
   build-bicep:
-    if: github.repository == 'azuredevcollege/trainingdays'
+    if: github.repository == 'azdc-training/trainingdays-cw'
     runs-on: ubuntu-latest
     env:
-      BICEP_FILE_PATH: "./day5/apps/infrastructure/bicep/resources/resourcesmain.bicep"
-      BICEP_MODULE_PATH: "./day5/apps/infrastructure/bicep/resources/"
+      BICEP_FILE_PATH: './day5/apps/infrastructure/bicep/resources/resourcesmain.bicep'
+      BICEP_MODULE_PATH: './day5/apps/infrastructure/bicep/resources/'
       NEED_DEPLOY: ${{ (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') }}
 
     steps:
@@ -50,11 +50,11 @@ jobs:
           retention-days: 30
 
   build-api:
-    if: github.repository == 'azuredevcollege/trainingdays'
+    if: github.repository == 'azdc-training/trainingdays-cw'
     runs-on: ubuntu-latest
     env:
-      API_PACKAGE_PATH: "publish/scmresourcesapi"
-      API_PROJECT_PATH: "./day5/apps/dotnetcore/Scm.Resources/Adc.Scm.Resources.Api"
+      API_PACKAGE_PATH: 'publish/scmresourcesapi'
+      API_PROJECT_PATH: './day5/apps/dotnetcore/Scm.Resources/Adc.Scm.Resources.Api'
       NEED_DEPLOY: ${{ (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') }}
 
     steps:
@@ -69,7 +69,7 @@ jobs:
       - name: Use Cache
         uses: actions/cache@v2
         with:
-          path: "~/.nuget/packages"
+          path: '~/.nuget/packages'
           key: ${{ runner.os }}-nuget-${{ hashFiles('./day5/apps/dotnetcore/Scm.Resources/Adc.Scm.Resources.Api/packages.lock.json') }}
 
       - name: Build and publish SCM Resources API
@@ -89,16 +89,16 @@ jobs:
         if: env.NEED_DEPLOY == 'true'
         with:
           name: drop
-          path: "${{ env.API_PROJECT_PATH }}/${{ env.API_PACKAGE_PATH }}/${{ env.API_PACKAGE_NAME }}"
+          path: '${{ env.API_PROJECT_PATH }}/${{ env.API_PACKAGE_PATH }}/${{ env.API_PACKAGE_NAME }}'
           if-no-files-found: error
           retention-days: 30
 
   build-resizer:
-    if: github.repository == 'azuredevcollege/trainingdays'
+    if: github.repository == 'azdc-training/trainingdays-cw'
     runs-on: ubuntu-latest
     env:
-      RESIZER_PACKAGE_PATH: "publish/resizer"
-      RESIZER_PROJECT_PATH: "./day5/apps/dotnetcore/Scm.Resources/Adc.Scm.Resources.ImageResizer"
+      RESIZER_PACKAGE_PATH: 'publish/resizer'
+      RESIZER_PROJECT_PATH: './day5/apps/dotnetcore/Scm.Resources/Adc.Scm.Resources.ImageResizer'
       NEED_DEPLOY: ${{ (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') }}
 
     steps:
@@ -113,7 +113,7 @@ jobs:
       - name: Use Cache
         uses: actions/cache@v2
         with:
-          path: "~/.nuget/packages"
+          path: '~/.nuget/packages'
           key: ${{ runner.os }}-nuget-${{ hashFiles('./day5/apps/dotnetcore/Scm.Resources/Adc.Scm.Resources.ImageResizer/packages.lock.json') }}
 
       - name: Build and publish SCM ImageResizer
@@ -133,12 +133,12 @@ jobs:
         if: env.NEED_DEPLOY == 'true'
         with:
           name: drop
-          path: "${{ env.RESIZER_PROJECT_PATH }}/${{ env.RESIZER_PACKAGE_PATH }}/${{ env.RESIZER_PACKAGE_NAME }}"
+          path: '${{ env.RESIZER_PROJECT_PATH }}/${{ env.RESIZER_PACKAGE_PATH }}/${{ env.RESIZER_PACKAGE_NAME }}'
           if-no-files-found: error
           retention-days: 30
 
   deploy-infrastructure-to-dev:
-    if: (github.repository == 'azuredevcollege/trainingdays') && ((github.event_name == 'push') || (github.event_name == 'workflow_dispatch'))
+    if: (github.repository == 'azdc-training/trainingdays-cw') && ((github.event_name == 'push') || (github.event_name == 'workflow_dispatch'))
     runs-on: ubuntu-latest
     environment: day5-scm-dev
     needs: [build-bicep, build-api, build-resizer]
@@ -239,7 +239,7 @@ jobs:
           --url https://management.azure.com/subscriptions/${{fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId}}/resourceGroups/${{ needs.deploy-infrastructure-to-dev.outputs.resourceGroupName }}/providers/Microsoft.Web/sites/${{ needs.deploy-infrastructure-to-dev.outputs.imageResizerFunctionName }}/syncfunctiontriggers?api-version=2020-12-01
 
   deploy-infrastructure-to-test:
-    if: (github.repository == 'azuredevcollege/trainingdays') && ((github.event_name == 'push') || (github.event_name == 'workflow_dispatch'))
+    if: (github.repository == 'azdc-training/trainingdays-cw') && ((github.event_name == 'push') || (github.event_name == 'workflow_dispatch'))
     runs-on: ubuntu-latest
     environment: day5-scm-test
     needs: [deploy-resourceapi-to-dev, deploy-resizer-to-dev]
